@@ -914,4 +914,20 @@ a:hover { color: var(--nc-gold-dk); }
   font-size: 0.9rem;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}
+
 @keyframes nc-spin { to { transform: rotate(360deg); } }

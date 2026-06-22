@@ -2,6 +2,7 @@ import { useEffect, useState }        from 'react';
 import { useParams, Link }            from 'react-router-dom';
 import { useSelector }                from 'react-redux';
 import { Container, Row, Col }        from 'react-bootstrap';
+import { useNavigate }                from "react-router-dom";
 import axios                          from 'axios';
 import Loader                         from '../components/Loader.jsx';
 import Message                        from '../components/Message.jsx';
@@ -9,6 +10,7 @@ import Message                        from '../components/Message.jsx';
 const OrderScreen = () => {
   const { id }        = useParams();
   const { userInfo }  = useSelector((s) => s.user);
+  const navigate = useNavigate();
 
   const [order,    setOrder]    = useState(null);
   const [loading,  setLoading]  = useState(true);
@@ -20,20 +22,42 @@ const OrderScreen = () => {
   const fmt = (v) =>
     Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+  const config = userInfo
+    ? {
+        headers: {
+          Authorization: `Bearer ${userInfo.token}`
+        }
+      }
+    : {};
 
   const fetchOrder = async () => {
+    if (!userInfo) return;
+
     try {
-      const { data } = await axios.get(`/api/orders/${id}`, config);
+      const { data } = await axios.get(
+        `/api/orders/${id}`,
+        config
+      );
+
       setOrder(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Não foi possível carregar o pedido.');
+      setError(
+        err.response?.data?.message ||
+        'Não foi possível carregar o pedido.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchOrder(); }, [id]);
+  useEffect(() => {
+    if (!userInfo) {
+      navigate('/login');
+      return;
+    }
+
+    fetchOrder();
+  }, [id, userInfo, navigate]);
 
   const simulatePayHandler = async () => {
     setActMsg(''); setActErr('');
@@ -62,13 +86,14 @@ const OrderScreen = () => {
 
   if (loading) return <Loader label="Buscando pedido..." />;
   if (error || !order) {
-  return (
-    <DevelopmentScreen
-      title="Pedido não encontrado"
-      description="O pedido solicitado não existe ou você não tem acesso a ele."
-    />
-  );
-}
+    return (
+      <Container style={{ padding: '48px 0' }}>
+        <Message variant="error">
+          Pedido não encontrado ou você não possui acesso.
+        </Message>
+      </Container>
+    );
+  }
   if (error)   return (
     <Container style={{ padding: '48px 0' }}>
       <Message variant="error">{error}</Message>
