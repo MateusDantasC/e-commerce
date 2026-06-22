@@ -1,4 +1,5 @@
 import Order from '../models/Order.js';
+import Product from '../models/Product.js';
 
 // POST /api/orders
 export const createOrder = async (req, res) => {
@@ -23,15 +24,48 @@ export const createOrder = async (req, res) => {
     throw new Error('Selecione uma forma de pagamento.');
   }
 
+  let calculatedItemsPrice = 0;
+
+  for (const item of orderItems) {
+    const product = await Product.findById(item.product);
+
+    if (!product) {
+      res.status(404);
+      throw new Error(`Produto não encontrado: ${item.name}`);
+    }
+
+    if (product.countInStock < item.qty) {
+      res.status(400);
+      throw new Error(
+        `${product.name} possui apenas ${product.countInStock} unidades em estoque`
+      );
+    }
+
+    calculatedItemsPrice += product.price * item.qty;
+  }
+
+  const calculatedTaxPrice = Number(
+    (calculatedItemsPrice * 0.1).toFixed(2)
+  );
+
+  const calculatedShippingPrice =
+    calculatedItemsPrice > 500 ? 0 : 29.9;
+
+  const calculatedTotalPrice =
+    calculatedItemsPrice +
+    calculatedTaxPrice +
+    calculatedShippingPrice;
+
   const order = new Order({
     user: req.user._id,
     orderItems,
     shippingAddress,
     paymentMethod,
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
+
+    itemsPrice: calculatedItemsPrice,
+    taxPrice: calculatedTaxPrice,
+    shippingPrice: calculatedShippingPrice,
+    totalPrice: calculatedTotalPrice,
   });
 
   const created = await order.save();
@@ -43,15 +77,18 @@ export const getOrderById = async (req, res) => {
   const order = await Order.findById(req.params.id)
     .populate('user', 'name email');
 
-  if (!order) {
-    res.status(404);
-    throw new Error('Pedido não encontrado.');
-  }
+    if (!order) {
+      res.status(404);
+      throw new Error('Pedido não encontrado.');
+    }
 
-  if (order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-    res.status(403);
-    throw new Error('Sem permissão para ver este pedido.');
-  }
+    if (
+      order.user._id.toString() !== req.user._id.toString() &&
+      !req.user.isAdmin
+    ) {
+      res.status(403);
+      throw new Error('Sem permissão para ver este pedido.');
+    }
 
   res.json(order);
 };
@@ -72,6 +109,19 @@ export const updateOrderToPaid = async (req, res) => {
     throw new Error('Pedido não encontrado.');
   }
 
+  if (order.isPaid) {
+    res.status(400);
+    throw new Error('Este pedido já foi pago.');
+  }
+
+  if (
+    order.user.toString() !== req.user._id.toString() &&
+    !req.user.isAdmin
+  ) {
+    res.status(403);
+    throw new Error('Não autorizado');
+  }
+
   order.isPaid   = true;
   order.paidAt   = Date.now();
   order.paymentResult = {
@@ -80,6 +130,20 @@ export const updateOrderToPaid = async (req, res) => {
     update_time:   req.body.update_time,
     email_address: req.body.email_address,
   };
+
+  for (const item of order.orderItems) {
+    const product = await Product.findById(item.product);
+
+    if (product) {
+      product.countInStock -= item.qty;
+
+      if (product.countInStock < 0) {
+        product.countInStock = 0;
+      }
+
+      await product.save();
+    }
+  }
 
   const updated = await order.save();
   res.json(updated);
@@ -92,6 +156,14 @@ export const simulatePayment = async (req, res) => {
   if (!order) {
     res.status(404);
     throw new Error('Pedido não encontrado.');
+  }
+
+  if (
+    order.user.toString() !== req.user._id.toString() &&
+    !req.user.isAdmin
+  ) {
+    res.status(403);
+    throw new Error('Não autorizado');
   }
 
   if (order.isCancelled) {
@@ -113,6 +185,20 @@ export const simulatePayment = async (req, res) => {
     email_address: order.user?.email || '',
   };
 
+  for (const item of order.orderItems) {
+    const product = await Product.findById(item.product);
+
+    if (product) {
+      product.countInStock -= item.qty;
+
+      if (product.countInStock < 0) {
+        product.countInStock = 0;
+      }
+
+      await product.save();
+    }
+  }
+
   const updated = await order.save();
   res.json(updated);
 };
@@ -126,10 +212,12 @@ export const cancelOrder = async (req, res) => {
     throw new Error('Pedido não encontrado.');
   }
 
-  // Apenas o dono ou admin pode cancelar
-  if (order.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+  if (
+    order.user.toString() !== req.user._id.toString() &&
+    !req.user.isAdmin
+  ) {
     res.status(403);
-    throw new Error('Sem permissão para cancelar este pedido.');
+    throw new Error('Não autorizado');
   }
 
   if (order.isPaid) {
@@ -164,6 +252,11 @@ export const updateOrderToDelivered = async (req, res) => {
   if (!order) {
     res.status(404);
     throw new Error('Pedido não encontrado.');
+  }
+
+  if (!req.user.isAdmin) {
+    res.status(403);
+    throw new Error('Apenas administradores podem entregar pedidos.');
   }
 
   order.isDelivered  = true;

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch }               from 'react-redux';
 import { Container, Row, Col }       from 'react-bootstrap';
 import axios                         from 'axios';
-import { addToCart }                 from '../slices/cartSlice.js';
+import { addToCart, clearCart }      from '../slices/cartSlice.js';
 import Loader                        from '../components/Loader.jsx';
 import Message                       from '../components/Message.jsx';
 import { useSelector } from 'react-redux';
@@ -51,8 +51,28 @@ const ProductScreen = () => {
     countInStock: product.countInStock,
     qty,
   }));
-  navigate('/cart');
 };
+
+  const buyNowHandler = () => {
+    if (!userInfo) {
+      navigate('/login');
+      return;
+    }
+
+    dispatch(clearCart());
+
+    dispatch(addToCart({
+      _id: product._id,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      brand: product.brand,
+      countInStock: product.countInStock,
+      qty,
+    }));
+
+    navigate('/checkout');
+  };
 
   return (
     <Container>
@@ -132,14 +152,38 @@ const ProductScreen = () => {
               </div>
             )}
 
-            <button
-              className="btn-gold"
-              style={{ minWidth: 220 }}
-              disabled={product.countInStock === 0}
-              onClick={addToCartHandler}
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                flexWrap: 'wrap',
+                marginTop: '10px',
+              }}
             >
-              {product.countInStock === 0 ? 'Esgotado' : 'Adicionar ao carrinho'}
-            </button>
+              <button
+                className="btn-gold"
+                style={{ minWidth: 220 }}
+                disabled={product.countInStock === 0}
+                onClick={addToCartHandler}
+              >
+                {product.countInStock === 0
+                  ? 'Esgotado'
+                  : 'Adicionar ao carrinho'}
+              </button>
+
+              {product.countInStock > 0 && (
+                <button
+                  className="btn-gold"
+                  style={{
+                    minWidth: 220,
+                    opacity: 0.9,
+                  }}
+                  onClick={buyNowHandler}
+                >
+                  Comprar Agora
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
