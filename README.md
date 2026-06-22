@@ -1,14 +1,13 @@
-# NOIR CELLAR 🍷
+# Noir Cellar 🍷
 
-Loja de vinhos e produtos premium. E-commerce full stack construído com a stack MERN — MongoDB Atlas + Express + Node.js no backend e React + Vite + Redux Toolkit no frontend, com autenticação via JWT e integração com PayPal para pagamentos.
+Loja de vinhos e produtos premium. E-commerce full stack com a stack MERN — MongoDB Atlas + Express + Node.js no backend e React + Vite + Redux Toolkit no frontend, com autenticação via JWT.
 
 ---
 
 ## Pré-requisitos
 
-- Node.js v25+
+- Node.js v18+
 - Conta no [MongoDB Atlas](https://www.mongodb.com/atlas) (cloud) ou MongoDB local
-- Conta no [PayPal Developer](https://developer.paypal.com/) para pagamentos (opcional em dev)
 
 ---
 
@@ -17,19 +16,17 @@ Loja de vinhos e produtos premium. E-commerce full stack construído com a stack
 ### Rodar tudo junto (recomendado)
 
 ```bash
-cp .env.example .env  # edite com suas variáveis
+cp .env.example .env   # edite com suas variáveis
 npm install
 cd frontend && npm install && cd ..
-npm run dev           # inicia backend + frontend com concurrently
+npm run dev            # backend + frontend simultâneos via concurrently
 ```
 
 ### Backend (somente)
 
 ```bash
-# Na raiz do projeto — server.js fica aqui, não há subpasta backend/
-cp .env.example .env
-npm install
-npm run server        # nodemon server.js — http://localhost:5000
+# server.js fica na raiz — não há subpasta backend/
+npm run server         # nodemon server.js → http://localhost:5000
 ```
 
 ### Frontend (somente)
@@ -37,27 +34,26 @@ npm run server        # nodemon server.js — http://localhost:5000
 ```bash
 cd frontend
 npm install
-npm run dev           # http://localhost:3000
+npm run dev            # http://localhost:3000
 ```
 
 ### Popular o banco com dados de exemplo
 
 ```bash
-npm run seed        # importa produtos, usuários e pedidos de exemplo
-npm run seed:d      # destrói todos os dados do banco
+npm run seed           # importa produtos e usuários de exemplo
 ```
 
 ---
 
 ## Configuração do backend (`.env`)
 
-| Variável           | Descrição                              | Obrigatória |
-| ------------------ | -------------------------------------- | :---------: |
-| `MONGO_URI`        | URI de conexão do MongoDB Atlas        | ✅          |
-| `JWT_SECRET`       | Chave secreta para assinar tokens JWT  | ✅          |
-| `PORT`             | Porta do servidor (padrão: 3000/5000)  | Opcional    |
-| `PAYPAL_CLIENT_ID` | Client ID da conta PayPal Developer    | Opcional    |
-| `NODE_ENV`         | `development` ou `production`          | Opcional    |
+| Variável     | Descrição                             | Obrigatória |
+| ------------ | ------------------------------------- | :---------: |
+| `MONGO_URI`  | URI de conexão do MongoDB Atlas       | ✅          |
+| `JWT_SECRET` | Chave secreta para assinar tokens JWT | ✅          |
+| `JWT_EXPIRE` | Tempo de expiração do token (ex: 30d) | ✅          |
+| `PORT`       | Porta do servidor (padrão: 5000)      | Opcional    |
+| `NODE_ENV`   | `development` ou `production`         | Opcional    |
 
 > **Atenção:** em ambientes Windows com restrição de DNS, adicione ao topo do `server.js`:
 > ```js
@@ -70,33 +66,51 @@ npm run seed:d      # destrói todos os dados do banco
 ## Estrutura
 
 ```
-noir-cellar/
-├── backend/                  # ou raiz do projeto
-│   ├── config/
-│   │   └── database.js       # Conexão com MongoDB Atlas
-│   ├── controllers/          # Lógica de cada rota
-│   ├── middleware/
-│   │   ├── authMiddleware.js  # Proteção de rotas (JWT)
-│   │   └── adminMiddleware.js # Restrição a admins
-│   ├── models/
-│   │   ├── User.js           # Usuário (com campo avatar)
-│   │   ├── Product.js        # Produto
-│   │   └── Order.js          # Pedido (com campo isCancelled)
-│   ├── routes/
-│   │   ├── productRoutes.js
-│   │   ├── authRoutes.js
-│   │   ├── userRoutes.js
-│   │   └── orderRoutes.js
-│   ├── seeder.js             # Script de seed do banco
-│   └── server.js             # Entry point
-│
+mern-ecommerce/
+├── config/
+│   └── database.js              # Conexão com MongoDB Atlas
+├── controllers/
+│   ├── authController.js
+│   ├── orderController.js
+│   ├── productController.js
+│   └── userController.js
+├── middleware/
+│   ├── authMiddleware.js        # Proteção de rotas (JWT)
+│   └── errorMiddleware.js
+├── models/
+│   ├── User.js                  # Usuário (com campo avatar)
+│   ├── Product.js               # Produto
+│   └── Order.js                 # Pedido (com isCancelled)
+├── routes/
+│   ├── authRoutes.js
+│   ├── productRoutes.js
+│   ├── userRoutes.js
+│   └── orderRoutes.js
+├── seeder.js                    # Script de seed do banco
+├── server.js                    # Entry point
+├── package.json
 └── frontend/
-    ├── public/
     └── src/
-        ├── components/       # Componentes reutilizáveis
-        ├── screens/          # 18 telas da aplicação
-        ├── store/            # Redux Toolkit (slices + actions)
-        └── main.jsx
+        ├── components/          # Header, Footer, Loader, PrivateRoute, AdminRoute...
+        ├── screens/             # Telas públicas, de usuário e admin
+        │   ├── HomeScreen.jsx
+        │   ├── LoginScreen.jsx
+        │   ├── RegisterScreen.jsx
+        │   ├── ProductScreen.jsx
+        │   ├── CartScreen.jsx
+        │   ├── CheckoutScreen.jsx
+        │   ├── OrderScreen.jsx
+        │   ├── MyOrdersScreen.jsx
+        │   ├── ProfileScreen.jsx
+        │   ├── DevelopmentScreen.jsx
+        │   └── admin/
+        │       ├── AdminOverviewScreen.jsx
+        │       ├── AdminProductsScreen.jsx
+        │       ├── AdminOrdersScreen.jsx
+        │       └── AdminUsersScreen.jsx
+        ├── slices/              # Redux slices (cart, user)
+        ├── store.js
+        └── App.jsx              # Definição de rotas
 ```
 
 ---
@@ -104,37 +118,49 @@ noir-cellar/
 ## Funcionalidades
 
 **Visitante**
-- Navegar pelo catálogo e buscar produtos
+- Navegar pelo catálogo de produtos
 - Ver detalhes de produto
 - Adicionar ao carrinho (persistido no localStorage)
 
 **Usuário autenticado**
 - Login / Cadastro com JWT
-- Checkout completo com endereço e pagamento via PayPal
-- Histórico de pedidos
-- Área "Minha Área" com edição de perfil, avatar e atalhos rápidos
+- Checkout completo com endereço e método de pagamento
+- Acompanhar pedido individual (`/orders/:id`)
+- Histórico de pedidos (`/orders`)
+- Perfil com edição de dados e avatar (`/profile`)
 
 **Admin**
-- Dashboard com estatísticas
-- CRUD completo de produtos, pedidos e usuários
-- Cancelamento de pedidos
+- Dashboard com visão geral (`/admin`)
+- CRUD de produtos (`/admin/products`)
+- Gestão de pedidos com cancelamento (`/admin/orders`)
+- Gestão de usuários (`/admin/users`)
+
+---
+
+## Rotas da API
+
+| Grupo    | Base path       |
+| -------- | --------------- |
+| Auth     | `/api/auth`     |
+| Produtos | `/api/products` |
+| Usuários | `/api/users`    |
+| Pedidos  | `/api/orders`   |
 
 ---
 
 ## Stack técnica
 
-| Camada     | Tecnologia                                          |
-| ---------- | --------------------------------------------------- |
-| Runtime    | Node.js v25.5.0                                     |
-| Backend    | Express v5.1.0, Mongoose v8.9.5                     |
-| Auth       | bcryptjs v3, jsonwebtoken v9                        |
-| Frontend   | React v19, Vite v8, Redux Toolkit v2                |
-| UI         | React Bootstrap v2                                  |
-| HTTP       | axios v1                                            |
-| Dev tools  | concurrently v9, nodemon v3                         |
-| Banco      | MongoDB Atlas (cloud)                               |
-| Pagamento  | PayPal SDK                                          |
-| Deploy     | Heroku                                              |
+| Camada    | Tecnologia                                       |
+| --------- | ------------------------------------------------ |
+| Runtime   | Node.js                                          |
+| Backend   | Express v5, Mongoose v8                          |
+| Auth      | bcryptjs v3, jsonwebtoken v9                     |
+| Frontend  | React v19, Vite v8, Redux Toolkit v2             |
+| UI        | React Bootstrap v2, Bootstrap v5                 |
+| HTTP      | axios v1                                         |
+| Dev tools | concurrently v9, nodemon v3                      |
+| Banco     | MongoDB Atlas (cloud)                            |
+| Deploy    | Heroku                                           |
 
 ---
 
@@ -144,17 +170,6 @@ noir-cellar/
 - **Gold:** `#c9a84c`
 - **Wine:** `#7b2935`
 - **Tipografia:** Playfair Display + Montserrat
-
----
-
-## Rotas da API
-
-| Grupo       | Base path        |
-| ----------- | ---------------- |
-| Produtos    | `/api/products`  |
-| Auth        | `/api/auth`      |
-| Usuários    | `/api/users`     |
-| Pedidos     | `/api/orders`    |
 
 ---
 
