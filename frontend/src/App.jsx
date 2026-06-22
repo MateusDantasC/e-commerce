@@ -12,6 +12,8 @@ import CheckoutScreen        from './screens/CheckoutScreen.jsx';
 import OrderScreen           from './screens/OrderScreen.jsx';
 import MyOrdersScreen        from './screens/MyOrdersScreen.jsx';
 import ProfileScreen         from './screens/ProfileScreen.jsx';
+import Footer                from './components/Footer.jsx';
+import DevelopmentScreen     from './screens/DevelopmentScreen.jsx';
 
 import AdminOverviewScreen   from './screens/admin/AdminOverviewScreen.jsx';
 import AdminProductsScreen   from './screens/admin/AdminProductsScreen.jsx';
@@ -43,8 +45,20 @@ function App() {
             <Route path="/admin/products" element={<AdminProductsScreen />} />
             <Route path="/admin/orders"   element={<AdminOrdersScreen />} />
             <Route path="/admin/users"    element={<AdminUsersScreen />} />
+            
+            {/* Em desenvolvimento */}
+            <Route path="/contact"   element={ <DevelopmentScreen title="Contato" description="Nosso canal de atendimento está sendo preparado." />} />
+            <Route path="/faq"       element={ <DevelopmentScreen title="Perguntas Frequentes" description="Estamos organizando as dúvidas mais comuns." />} />
+            <Route path="/privacy"   element={ <DevelopmentScreen title="Política de Privacidade" description="Esta seção estará disponível em breve." />} />
+            <Route path="/instagram" element={ <DevelopmentScreen title="Instagram" description="Nossa presença nas redes sociais será lançada em breve." />} />
+            <Route path="/facebook"  element={ <DevelopmentScreen title="Facebook" description="Nossa presença nas redes sociais será lançada em breve." />} />
+            <Route path="/whatsapp"  element={ <DevelopmentScreen title="WhatsApp" description="Em breve você poderá falar conosco diretamente." />} />
+          
+            {/* Rota coringa */}
+            <Route path="*" element={<DevelopmentScreen title="Página não encontrada" description="A página que você está procurando não existe." />} />
           </Routes>
         </main>
+        <Footer />
       </BrowserRouter>
     </Provider>
   );

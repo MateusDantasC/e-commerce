@@ -61,6 +61,14 @@ const OrderScreen = () => {
   };
 
   if (loading) return <Loader label="Buscando pedido..." />;
+  if (error || !order) {
+  return (
+    <DevelopmentScreen
+      title="Pedido não encontrado"
+      description="O pedido solicitado não existe ou você não tem acesso a ele."
+    />
+  );
+}
   if (error)   return (
     <Container style={{ padding: '48px 0' }}>
       <Message variant="error">{error}</Message>

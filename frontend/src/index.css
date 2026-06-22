@@ -855,4 +855,63 @@ a:hover { color: var(--nc-gold-dk); }
   border-bottom: 1px solid var(--nc-border);
 }
 
+.footer {
+  background-color: #0d0d0d;
+  border-top: 1px solid #c9a84c;
+  color: #f0ece4;
+  padding: 60px 0 25px;
+  margin-top: 80px;
+}
+
+.footer-title {
+  color: #c9a84c;
+  font-family: "Playfair Display", serif;
+  margin-bottom: 18px;
+  font-size: 1.2rem;
+}
+
+.footer-text {
+  color: #cfc7bb;
+  line-height: 1.7;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 10px;
+}
+
+.footer-links a,
+.social-links a {
+  color: #f0ece4;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.footer-links a:hover,
+.social-links a:hover {
+  color: #c9a84c;
+}
+
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-divider {
+  border-color: rgba(201, 168, 76, 0.3);
+  margin: 35px 0 20px;
+}
+
+.footer-bottom {
+  text-align: center;
+  color: #9e978d;
+  font-size: 0.9rem;
+}
+
 @keyframes nc-spin { to { transform: rotate(360deg); } }
