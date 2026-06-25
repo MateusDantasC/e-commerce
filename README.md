@@ -6,7 +6,7 @@ Loja de vinhos e produtos premium. E-commerce full stack com a stack MERN — Mo
 
 ## Pré-requisitos
 
-- Node.js v18+
+- Node.js v19
 - Conta no [MongoDB Atlas](https://www.mongodb.com/atlas) (cloud) ou MongoDB local
 
 ---
